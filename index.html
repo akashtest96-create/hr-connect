@@ -34,6 +34,11 @@
 <div id="install"><img src="icon-192.png" alt=""><div><b>Install HR Connect</b>Get it on your home screen like an app.</div><button id="installBtn">Install</button><button class="x" id="installX">✕</button></div>
 
 <script>
+/* iPhone/iPad never use this page: Safari would bookmark the manifest start_url (token lost). */
+(function () {
+  var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (ios) { var q = location.search || ''; try { if (!q && localStorage.getItem('hrc_t')) q = '?t=' + encodeURIComponent(localStorage.getItem('hrc_t')); } catch (e) {} location.replace('ios.html' + q + (q ? '&' : '?') + 'v=1' + (q ? '#t=' + q.slice(3).split('&')[0] : '')); }
+})();
 /* ===== CONFIGURE: paste your Apps Script web-app URL (ends in /exec) ===== */
 var APP_URL = 'https://script.google.com/macros/s/AKfycby0qSdkAIgZ-eo3fWbU6wpwns-j4XscC1REJMjGeJv3XYAef33FE5_wzIahwIx3KHtj/exec';
 
@@ -56,14 +61,6 @@ f.addEventListener('load', function () { setTimeout(function () { document.getEl
 }
 setTimeout(function () { if (document.getElementById('frame')) document.getElementById('splash').classList.add('hidden'); }, 6000);
 
-/* iPhone: Safari bookmarks the manifest start_url (token lost) and gives a home-screen app its own
-   storage. Removing the manifest on iOS makes Safari bookmark THIS page's URL, token included;
-   the apple-mobile-web-app meta tags still give full-screen. Android keeps the manifest. */
-var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-if (isIOS) {
-  var ml = document.querySelector('link[rel="manifest"]'); if (ml) ml.parentNode.removeChild(ml);
-  if (token && !location.search) history.replaceState(null, '', '?t=' + encodeURIComponent(token));
-}
 /* Launched from the iPhone home screen without a token: explain instead of a dead end */
 if (!token && window.navigator.standalone) {
   document.getElementById('splash').innerHTML = '<img src="icon-192.png" alt=""><b>One more step</b><span style="max-width:300px;text-align:center;line-height:1.5">Open your personal link once in Safari, then use Share → Add to Home Screen from that page. This icon can then be deleted.</span>';

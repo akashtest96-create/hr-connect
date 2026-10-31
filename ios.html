@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HR Connect</title>
+<meta name="theme-color" content="#0B1F33">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HR Connect">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<!-- deliberately NO <link rel="manifest">: Safari must bookmark this exact URL (with the token) -->
+<style>
+  html,body{margin:0;height:100%;background:#0B1F33;font:15px/1.5 -apple-system,system-ui,sans-serif;color:#fff}
+  #frame{position:fixed;inset:0;width:100%;height:100%;border:0;background:#0B1F33}
+  #splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(900px 500px at 85% -10%,rgba(37,171,242,.35),transparent 60%),#0B1F33;transition:opacity .4s;padding:24px;text-align:center}
+  #splash img{width:96px;height:96px;border-radius:24px;box-shadow:0 20px 50px -20px rgba(37,171,242,.6)}
+  #splash b{font-size:18px}
+  #splash span{font-size:13px;color:rgba(255,255,255,.65);max-width:320px;line-height:1.5}
+  .hidden{opacity:0;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="splash"><img src="icon-192.png" alt=""><b>Daily HR Connect</b><span>Zenbyte Technologies</span></div>
+<iframe id="frame" title="Daily HR Connect"></iframe>
+<script>
+var APP_URL = 'PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE';
+/* token: query ?t=, else hash #t=, else remembered */
+var q = new URLSearchParams(location.search), token = q.get('t') || '';
+if (!token && location.hash.indexOf('#t=') === 0) token = decodeURIComponent(location.hash.slice(3));
+try { if (token) localStorage.setItem('hrc_t', token); else token = localStorage.getItem('hrc_t') || ''; } catch (e) {}
+/* make sure the URL Safari bookmarks carries the token in BOTH query and hash */
+if (token) { var want = location.pathname + '?t=' + encodeURIComponent(token) + '#t=' + encodeURIComponent(token); if (location.pathname + location.search + location.hash !== want) history.replaceState(null, '', want); }
+
+var splash = document.getElementById('splash'), f = document.getElementById('frame');
+function isMobile() { var u = navigator.userAgent, touch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+  var desktopPointer = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  return touch && !desktopPointer && /Android|iPhone|iPad|iPod|Mobile/i.test(u) && Math.min(screen.width, screen.height) <= 900; }
+if (!isMobile()) { splash.innerHTML = '<img src="icon-192.png" alt=""><b>Please open this on your phone</b><span>HR contacts are available only on a mobile phone so you can call or WhatsApp directly.</span>'; f.remove(); }
+else if (!token) { splash.innerHTML = '<img src="icon-192.png" alt=""><b>Open your personal link</b><span>Please open the personal link the HR team sent you. If you added this icon from the wrong page, delete it, open your personal link in Safari, then Share → Add to Home Screen.</span>'; f.remove(); }
+else {
+  f.src = APP_URL + (APP_URL.indexOf('?') > -1 ? '&' : '?') + 't=' + encodeURIComponent(token) + '&embed=1';
+  f.addEventListener('load', function () { setTimeout(function () { splash.classList.add('hidden'); }, 300); });
+  setTimeout(function () { splash.classList.add('hidden'); }, 6000);
+}
+</script>
+</body>
+</html>

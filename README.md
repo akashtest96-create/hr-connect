@@ -25,6 +25,10 @@ Open the personal link in Chrome → an **Install HR Connect** bar appears → t
 Zenbyte icon on the home screen, opens full-screen, no browser bar. The token is remembered,
 so the icon alone is enough from then on. iPhone: Safari → Share → Add to Home Screen (as before).
 
+## Files
+`index.html` (Android + install), `ios.html` (iPhone entry – no manifest on purpose), `manifest.webmanifest`,
+`sw.js`, three icons. **Put your /exec URL in BOTH `index.html` and `ios.html`.**
+
 ## iPhone note
 Candidates must add to home screen **from their personal link** (the page that already shows
 their list). The wrapper bakes the token into the home-screen app so it opens signed in.
