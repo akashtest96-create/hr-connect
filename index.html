@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Daily HR Connect</title>
+<meta name="theme-color" content="#0B1F33">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HR Connect">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  html,body{margin:0;height:100%;background:#0B1F33;font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#fff}
+  #frame{position:fixed;inset:0;width:100%;height:100%;border:0;background:#0B1F33}
+  #splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(900px 500px at 85% -10%,rgba(37,171,242,.35),transparent 60%),#0B1F33;transition:opacity .4s}
+  #splash img{width:96px;height:96px;border-radius:24px;box-shadow:0 20px 50px -20px rgba(37,171,242,.6)}
+  #splash b{font-size:18px;letter-spacing:-.01em}
+  #splash span{font-size:13px;color:rgba(255,255,255,.6)}
+  #install{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));display:none;align-items:center;gap:12px;background:#fff;color:#0F1C2A;border-radius:16px;padding:12px 14px;box-shadow:0 20px 50px -20px rgba(0,0,0,.6);z-index:5}
+  #install img{width:40px;height:40px;border-radius:10px}
+  #install div{flex:1;font-size:13px;line-height:1.3}
+  #install div b{display:block;font-size:14px}
+  #install button{border:0;border-radius:10px;padding:10px 14px;font-weight:700;font-size:13px;background:linear-gradient(135deg,#25ABF2,#2674B2);color:#fff}
+  #install .x{background:transparent;color:#7C8AA0;padding:6px}
+  .hidden{opacity:0;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="splash"><img src="icon-192.png" alt=""><b>Daily HR Connect</b><span>Zenbyte Technologies</span></div>
+<iframe id="frame" allow="clipboard-write" title="Daily HR Connect"></iframe>
+<div id="install"><img src="icon-192.png" alt=""><div><b>Install HR Connect</b>Get it on your home screen like an app.</div><button id="installBtn">Install</button><button class="x" id="installX">✕</button></div>
+
+<script>
+/* ===== CONFIGURE: paste your Apps Script web-app URL (ends in /exec) ===== */
+var APP_URL = 'https://script.google.com/macros/s/AKfycby0qSdkAIgZ-eo3fWbU6wpwns-j4XscC1REJMjGeJv3XYAef33FE5_wzIahwIx3KHtj/exec';
+
+/* Personal token: from ?t= in this URL, else remembered from last time */
+var qs = new URLSearchParams(location.search), token = qs.get('t') || '';
+try { if (token) localStorage.setItem('hrc_t', token); else token = localStorage.getItem('hrc_t') || ''; } catch (e) {}
+var src = APP_URL + (APP_URL.indexOf('?') > -1 ? '&' : '?') + (token ? 't=' + encodeURIComponent(token) : '') + '&embed=1';
+var f = document.getElementById('frame');
+f.src = src;
+f.addEventListener('load', function () { setTimeout(function () { document.getElementById('splash').classList.add('hidden'); }, 300); });
+setTimeout(function () { document.getElementById('splash').classList.add('hidden'); }, 6000);
+
+/* Install prompt (Android Chrome) */
+var deferred = null, bar = document.getElementById('install');
+window.addEventListener('beforeinstallprompt', function (e) {
+  e.preventDefault(); deferred = e;
+  var dismissed = 0; try { dismissed = Number(localStorage.getItem('hrc_install_dismissed') || 0); } catch (err) {}
+  if (!dismissed || Date.now() - dismissed > 3 * 86400000) bar.style.display = 'flex';
+});
+document.getElementById('installBtn').onclick = function () { if (!deferred) return; deferred.prompt(); deferred.userChoice.then(function () { bar.style.display = 'none'; deferred = null; }); };
+document.getElementById('installX').onclick = function () { bar.style.display = 'none'; try { localStorage.setItem('hrc_install_dismissed', String(Date.now())); } catch (e) {} };
+window.addEventListener('appinstalled', function () { bar.style.display = 'none'; });
+
+/* Service worker (required for install) */
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});
+</script>
+</body>
+</html>
