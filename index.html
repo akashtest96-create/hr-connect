@@ -41,9 +41,18 @@ var APP_URL = 'https://script.google.com/macros/s/AKfycby0qSdkAIgZ-eo3fWbU6wpwns
 var qs = new URLSearchParams(location.search), token = qs.get('t') || '';
 try { if (token) localStorage.setItem('hrc_t', token); else token = localStorage.getItem('hrc_t') || ''; } catch (e) {}
 var src = APP_URL + (APP_URL.indexOf('?') > -1 ? '&' : '?') + (token ? 't=' + encodeURIComponent(token) : '') + '&embed=1';
+/* Desktop / laptop gate (second layer – the dashboard enforces it too) */
+var MOBILE_ONLY = true;
+function isMobile() { var u = navigator.userAgent, touch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+  return touch && /Android|iPhone|iPad|iPod|Mobile/i.test(u) && Math.min(screen.width, screen.height) <= 900; }
 var f = document.getElementById('frame');
+if (MOBILE_ONLY && !isMobile()) {
+  document.getElementById('splash').innerHTML = '<img src="icon-192.png" alt=""><b>Please open this on your phone</b><span style="max-width:320px;text-align:center;line-height:1.5">HR contacts are available only on a mobile phone so you can call or WhatsApp directly. Open your personal link on your phone.</span>';
+  f.remove();
+} else {
 f.src = src;
 f.addEventListener('load', function () { setTimeout(function () { document.getElementById('splash').classList.add('hidden'); }, 300); });
+}
 setTimeout(function () { if (document.getElementById('frame')) document.getElementById('splash').classList.add('hidden'); }, 6000);
 
 /* iPhone: a home-screen web app launches from the manifest start_url and has its own storage,
