@@ -44,7 +44,8 @@ var src = APP_URL + (APP_URL.indexOf('?') > -1 ? '&' : '?') + (token ? 't=' + en
 /* Desktop / laptop gate (second layer – the dashboard enforces it too) */
 var MOBILE_ONLY = true;
 function isMobile() { var u = navigator.userAgent, touch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-  return touch && /Android|iPhone|iPad|iPod|Mobile/i.test(u) && Math.min(screen.width, screen.height) <= 900; }
+  var desktopPointer = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  return touch && !desktopPointer && /Android|iPhone|iPad|iPod|Mobile/i.test(u) && Math.min(screen.width, screen.height) <= 900; }
 var f = document.getElementById('frame');
 if (MOBILE_ONLY && !isMobile()) {
   document.getElementById('splash').innerHTML = '<img src="icon-192.png" alt=""><b>Please open this on your phone</b><span style="max-width:320px;text-align:center;line-height:1.5">HR contacts are available only on a mobile phone so you can call or WhatsApp directly. Open your personal link on your phone.</span>';
@@ -55,18 +56,13 @@ f.addEventListener('load', function () { setTimeout(function () { document.getEl
 }
 setTimeout(function () { if (document.getElementById('frame')) document.getElementById('splash').classList.add('hidden'); }, 6000);
 
-/* iPhone: a home-screen web app launches from the manifest start_url and has its own storage,
-   so bake the personal token into a dynamic manifest. Android keeps the static manifest. */
+/* iPhone: Safari bookmarks the manifest start_url (token lost) and gives a home-screen app its own
+   storage. Removing the manifest on iOS makes Safari bookmark THIS page's URL, token included;
+   the apple-mobile-web-app meta tags still give full-screen. Android keeps the manifest. */
 var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-if (isIOS && token) {
-  fetch('manifest.webmanifest').then(function (r) { return r.json(); }).then(function (m) {
-    var here = location.href.split('?')[0].split('#')[0];
-    m.start_url = here + '?t=' + encodeURIComponent(token); m.scope = here.replace(/[^\/]*$/, '');
-    m.icons.forEach(function (ic) { ic.src = new URL(ic.src, here).href; });
-    var link = document.querySelector('link[rel="manifest"]');
-    link.href = 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(m));
-  }).catch(function () {});
-  if (!location.search) history.replaceState(null, '', '?t=' + encodeURIComponent(token));   // keep token visible in the URL Safari bookmarks
+if (isIOS) {
+  var ml = document.querySelector('link[rel="manifest"]'); if (ml) ml.parentNode.removeChild(ml);
+  if (token && !location.search) history.replaceState(null, '', '?t=' + encodeURIComponent(token));
 }
 /* Launched from the iPhone home screen without a token: explain instead of a dead end */
 if (!token && window.navigator.standalone) {
