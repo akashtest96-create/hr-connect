@@ -44,7 +44,26 @@ var src = APP_URL + (APP_URL.indexOf('?') > -1 ? '&' : '?') + (token ? 't=' + en
 var f = document.getElementById('frame');
 f.src = src;
 f.addEventListener('load', function () { setTimeout(function () { document.getElementById('splash').classList.add('hidden'); }, 300); });
-setTimeout(function () { document.getElementById('splash').classList.add('hidden'); }, 6000);
+setTimeout(function () { if (document.getElementById('frame')) document.getElementById('splash').classList.add('hidden'); }, 6000);
+
+/* iPhone: a home-screen web app launches from the manifest start_url and has its own storage,
+   so bake the personal token into a dynamic manifest. Android keeps the static manifest. */
+var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+if (isIOS && token) {
+  fetch('manifest.webmanifest').then(function (r) { return r.json(); }).then(function (m) {
+    var here = location.href.split('?')[0].split('#')[0];
+    m.start_url = here + '?t=' + encodeURIComponent(token); m.scope = here.replace(/[^\/]*$/, '');
+    m.icons.forEach(function (ic) { ic.src = new URL(ic.src, here).href; });
+    var link = document.querySelector('link[rel="manifest"]');
+    link.href = 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(m));
+  }).catch(function () {});
+  if (!location.search) history.replaceState(null, '', '?t=' + encodeURIComponent(token));   // keep token visible in the URL Safari bookmarks
+}
+/* Launched from the iPhone home screen without a token: explain instead of a dead end */
+if (!token && window.navigator.standalone) {
+  document.getElementById('splash').innerHTML = '<img src="icon-192.png" alt=""><b>One more step</b><span style="max-width:300px;text-align:center;line-height:1.5">Open your personal link once in Safari, then use Share → Add to Home Screen from that page. This icon can then be deleted.</span>';
+  document.getElementById('frame').remove();
+}
 
 /* Install prompt (Android Chrome) */
 var deferred = null, bar = document.getElementById('install');

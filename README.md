@@ -25,6 +25,11 @@ Open the personal link in Chrome → an **Install HR Connect** bar appears → t
 Zenbyte icon on the home screen, opens full-screen, no browser bar. The token is remembered,
 so the icon alone is enough from then on. iPhone: Safari → Share → Add to Home Screen (as before).
 
+## iPhone note
+Candidates must add to home screen **from their personal link** (the page that already shows
+their list). The wrapper bakes the token into the home-screen app so it opens signed in.
+Adding from the plain `…/hr-connect/` address (no `?t=`) gives an icon that asks for the link.
+
 ## Updating
 The dashboard itself lives in Apps Script – update it there as usual; the wrapper never needs
 to change. If you ever edit the wrapper files, bump `CACHE = 'hrc-shell-v2'` in `sw.js`.
